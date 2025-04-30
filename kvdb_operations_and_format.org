@@ -1,0 +1,74 @@
+
+* Key-Value Store: Core Operation Plan and Storage Format
+
+** Overview
+This file outlines the operations your C++ key-value store should support, organized in phases, with an explanation of a recommended binary log format for efficient storage.
+
+* Phase 1: Core Operations (Must-Have)
+| Operation | Description                            | Needed in Log | Notes                       |
+|-----------+----------------------------------------+---------------+-----------------------------|
+| PUT       | Insert or update a key with a value    | Yes           | Overwrites previous value   |
+| PUT_S     | Insert or update a key with a value    | Yes           | Not overwriting ex. value   |
+| GET       | Retrieve the value for a key           | No            | Read-only, not logged       |
+| DELETE    | Remove a key                           | Yes           | Appends a tombstone         |
+| LOAD      | Rebuild state from the log file        | N/A           | Used on startup             |
+| FLUSH     | Force buffered writes to disk          | Optional      | Improves durability         |
+| CLOSE     | Gracefully shut down (sync + close)    | Optional      | Helpful for embedded use    |
+
+* Phase 2: Maintenance / Internal Operations
+| Operation   | Description                              | Needed in Log | Notes                         |
+|-------------+------------------------------------------+---------------+-------------------------------|
+| COMPACT     | Remove obsolete entries                  | No            | Internal only                 |
+| SNAPSHOT    | Save a consistent point-in-time view     | Optional      | Needed for durability         |
+| CHECKPOINT  | Mark a safe state to truncate the log    | Optional      | Helps speed up recovery       |
+
+* Phase 3: Optional / Advanced Features
+| Operation     | Description                            | Needed in Log | Notes                        |
+|---------------+----------------------------------------+---------------+------------------------------|
+| MERGE         | Atomically update a value              | Yes           | e.g., increment a counter     |
+| BATCH         | Group PUT and DEL into atomic op       | Yes           | Better performance            |
+| TTL           | Set expiration time on a key           | Yes           | Requires expiration sweeper   |
+| EXPIRE        | Remove expired keys                    | No            | Done lazily or via sweep      |
+| TXN_BEGIN/COMMIT | Transactional operations           | Yes           | Advanced                      |
+
+* Binary Log Format (Efficient On-Disk Storage)
+
+** Format Layout:
+#+BEGIN_SRC text
+[op:1][key_len:4][val_len:4][key_bytes][val_bytes]
+#+END_SRC
+
+- **op**: 1 byte operation code
+  - 0x01 = PUT
+  - 0x02 = DELETE
+  - (future: 0x03 = MERGE, etc)
+- **key_len**: 4-byte unsigned integer
+- **val_len**: 4-byte unsigned integer (0 for DELETE)
+- **key_bytes**: UTF-8 or binary-safe string
+- **val_bytes**: Binary-safe value
+
+** Example Record (PUT key="foo", val="bar"):
+#+BEGIN_SRC text
+[0x01][0x00 0x00 0x00 0x03][0x00 0x00 0x00 0x03][f o o][b a r]
+#+END_SRC
+
+* Why Use a Binary Format Instead of Text?
+
+** Faster Parsing:
+- You can read a fixed-size header (9 bytes) to know exactly how many more bytes to read.
+- No need to search for delimiters or parse text.
+
+** Binary-Safe:
+- Keys and values can contain any byte, including null or newlines.
+- Text formats (e.g., "PUT foo bar") can break on spaces or special characters.
+
+** Compact and Efficient:
+- Uses less disk I/O.
+- Avoids string conversions (no `stoi`, `split`, etc).
+
+** Easy Replay:
+- Read file in chunks, decode, and apply to in-memory map.
+- Ideal for log-structured storage models.
+
+* Summary
+Support a core set of operations and store them using an efficient binary log format. This ensures speed, safety, and extensibility, especially for large-scale or persistent key-value storage.

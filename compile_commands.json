@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/w8ste/rec/hase",
+  "command": "/usr/bin/c++  -I/home/w8ste/rec/hase/include -std=gnu++17 -o CMakeFiles/hase.dir/src/hippo_kv.cpp.o -c /home/w8ste/rec/hase/src/hippo_kv.cpp",
+  "file": "/home/w8ste/rec/hase/src/hippo_kv.cpp",
+  "output": "CMakeFiles/hase.dir/src/hippo_kv.cpp.o"
+},
+{
+  "directory": "/home/w8ste/rec/hase",
+  "command": "/usr/bin/c++  -I/home/w8ste/rec/hase/include -std=gnu++17 -o CMakeFiles/hase.dir/src/main.cpp.o -c /home/w8ste/rec/hase/src/main.cpp",
+  "file": "/home/w8ste/rec/hase/src/main.cpp",
+  "output": "CMakeFiles/hase.dir/src/main.cpp.o"
+}
+]
