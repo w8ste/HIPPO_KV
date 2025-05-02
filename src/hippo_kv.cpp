@@ -2,10 +2,6 @@
 #include <iostream>
 
 enum op_code {PUT = (uint8_t)0x01, PUT_SHALLOW = (uint8_t)0x02, DEL = (uint8_t)0x03};
-<<<<<<< HEAD
-=======
-
->>>>>>> put
 
 HIPPOKV::HIPPOKV(const std::string& file_name) : file_name(file_name) {
   file.open(file_name, std::ios::binary | std::ios::in | std::ios::out | std::ios::app);
@@ -46,11 +42,6 @@ void HIPPOKV::hippo_put(const std::string& key, const std::string& value) {
   file.write(value.c_str(), value_size);
   file.flush();
   db_map[key] = value;
-
-    for (auto i : db_map) 
-    std::cout << i.first << ": " << i.second
-              << std::endl;
-
 }
 
 void HIPPOKV::hippo_delete(const std::string& key) {
@@ -112,8 +103,8 @@ void HIPPOKV::replay_log() {
 
     if (op == PUT) {
       db_map[key] = value;
-    }
-    else if (op == DEL) {
+    } else if (op == DEL) {
       db_map.erase(key);
     }
+  }
 }
