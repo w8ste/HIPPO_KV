@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cstdint>
 
-enum op_code {PUT = (uint8_t)0x01, PUT_SHALLOW = (uint8_t)0x02, GET = (uint8_t)0x03};
+enum op_code {PUT = (uint8_t)0x01, PUT_SHALLOW = (uint8_t)0x02, DEL = (uint8_t)0x03};
 
 HIPPOKV::HIPPOKV(const std::string& file_name) : file_name(file_name) {
   file.open(file_name, std::ios::binary | std::ios::in | std::ios::out | std::ios::app);
@@ -11,7 +11,7 @@ HIPPOKV::HIPPOKV(const std::string& file_name) : file_name(file_name) {
     std::cerr << "Failed to open db file!" << std::endl;
   }
 
-  replay_log();
+  //replay_log();
 
 }
 
@@ -35,4 +35,37 @@ void HIPPOKV::hippo_put(const std::string& key, const std::string& value) {
   db_map[key] = value;
 }
 
-void HIPPOKV::replay_log() {}
+void HIPPOKV::replay_log() {
+
+  while(file) {
+
+    uint8_t op;
+    uint32_t key_size;
+    uint32_t value_size;
+
+    file.read(reinterpret_cast<char*>(&op), sizeof(op));
+
+     if (file.eof()) break;
+
+    file.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
+    file.read(reinterpret_cast<char*>(&value_size), sizeof(value_size));
+
+    std::string key(key_size, '\0');
+    std::string value(value_size, '\0');
+          
+    file.read(&key[0], sizeof(key_size));
+    file.read(&value[0], sizeof(value_size));
+
+    if (op == PUT) {
+      db_map[key] = value;
+    }
+    else if (op == DEL) {
+      db_map.erase(key);
+    }
+
+
+  }
+   for (auto i : db_map) 
+      std::cout << i.first << ": " << i.second
+                << std::endl;
+}
