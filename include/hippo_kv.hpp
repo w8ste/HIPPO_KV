@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <fstream>
-
+#include <cstdint>
 
 
 class HIPPOKV {
@@ -19,7 +19,9 @@ class HIPPOKV {
   // Insert key value pair not overwriting existing value
   void hippo_put_shallow();
 
-  bool hippo_get();
+  bool hippo_get(const std::string& key, std::string& value);
+
+  void hippo_delete(const std::string& key);
 
 private:
   std::string file_name;
@@ -27,7 +29,8 @@ private:
   std::unordered_map<std::string, std::string> db_map;
 
   void replay_log();
-  
+
+  void hippo_write_to_db(uint8_t op, const std::string& key, const std::string& value);
 };
 
 #endif
