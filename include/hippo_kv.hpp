@@ -24,9 +24,10 @@ class HIPPOKV {
   void hippo_delete(const std::string& key);
 
 private:
-  std::string file_name;
-  std::fstream file;
+  std::ofstream out_file;
   std::unordered_map<std::string, std::string> db_map;
+
+  std::string db_path;
 
   void replay_log();
 
