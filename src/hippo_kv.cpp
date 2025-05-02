@@ -12,10 +12,6 @@ HIPPOKV::HIPPOKV(const std::string& file_name) : file_name(file_name) {
 
   //replay_log();
 
-  for (auto i : db_map) 
-    std::cout << i.first << ": " << i.second
-              << std::endl;
-
 }
 
 HIPPOKV::~HIPPOKV() {
@@ -31,15 +27,17 @@ void HIPPOKV::hippo_put(const std::string& key, const std::string& value) {
     return;
 }
 
+  file.seekp(0, std::ios::end);
+
   op_code op = PUT;
   uint32_t key_size = key.size();
   uint32_t value_size = value.size();
   
   file.write(reinterpret_cast<const char*>(&op), sizeof(op));
   file.write(reinterpret_cast<const char*>(&key_size), sizeof(key_size));
-  file.write(key.c_str(), key_size);
   file.write(reinterpret_cast<const char*>(&value_size), sizeof(value_size));
-  file.write(value.c_str(), value_size);
+  file.write(key.data(), key_size);
+  file.write(value.data(), value_size);
   file.flush();
   db_map[key] = value;
 }
