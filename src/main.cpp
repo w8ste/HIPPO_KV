@@ -1,5 +1,7 @@
 #include <stdio.h>
-#include <iostream>
+#include <hippo_kv.hpp>
 int main() {
-  printf("Hello World!!!\n");
+    HIPPOKV db("kvdb.log");
+    db.hippo_put("key", "value");
+    return 0;
 }
