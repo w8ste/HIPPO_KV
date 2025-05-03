@@ -13,18 +13,24 @@ HIPPOKV::HIPPOKV(const std::string& path) : db_path(path) {
 }
 
 HIPPOKV::~HIPPOKV() {
-    out_file.close();
+  printf("hello there \n");
+
+  for (auto it : db_map) {
+    std::cout << it. first << " : " << it.second << std::endl;
+  }
+  
+  out_file.close();
 }
 
 void HIPPOKV::hippo_put(const std::string& key, const std::string& value) {
     uint8_t op = PUT;
     uint32_t key_size = key.size();
     uint32_t value_size = value.size();
-
+    std::cout << sizeof(op) << std::endl;
     out_file.write(reinterpret_cast<const char*>(&op), sizeof(op));
     out_file.write(reinterpret_cast<const char*>(&key_size), sizeof(key_size));
-    out_file.write(key.c_str(), key_size);
     out_file.write(reinterpret_cast<const char*>(&value_size), sizeof(value_size));
+    out_file.write(key.c_str(), key_size);
     out_file.write(value.c_str(), value_size);
     out_file.flush();
 
@@ -41,20 +47,27 @@ void HIPPOKV::replay_log() {
 
         in_file.read(reinterpret_cast<char*>(&op), sizeof(op));
         if (!in_file) break;
-
+        std::cout << "op : " << op << std::endl;
         in_file.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
         in_file.read(reinterpret_cast<char*>(&value_size), sizeof(value_size));
         if (!in_file) break;
-
+       
+        std::cout << "Key size: " << key_size << std::endl; 
+        std::cout << "Value size: " << value_size << std::endl;       
         std::string key(key_size, '\0');
         std::string value(value_size, '\0');
 
         in_file.read(&key[0], key_size);
         in_file.read(&value[0], value_size);
-        if (!in_file) break;
-
-        if (op == PUT) db_map[key] = value;
-        else if (op == DEL) db_map.erase(key);
+        
+        if (op == PUT) {
+          db_map[key] = value;
+          std::cout << key << " : " << db_map[key] << std::endl;
+        }
+        else if (op == DEL){
+          db_map.erase(key);
+          std::cout << key << " has been erased.\n" << std::endl;
+        } 
     }
 }
 
